@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            width: 420px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            font-size: 22px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 32px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus { border-color: #528ff5; }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #528ff5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover { background: #3a78e0; }
+        button:disabled { background: #a0b8f0; cursor: not-allowed; }
+
+        .result {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .result.success {
+            background: #edfaf3;
+            border: 1px solid #b2e6cc;
+            color: #1e7e45;
+        }
+
+        .result.error {
+            background: #fff0f0;
+            border: 1px solid #f5c0c0;
+            color: #c0392b;
+        }
+
+        .pay-link {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .pay-link:hover { background: #218838; }
+
+        .field-row { display: flex; gap: 12px; }
+        .field-row > div { flex: 1; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Create Payment Order</h2>
+    <p class="subtitle">Fill in the details to generate a Razorpay payment link</p>
+
+    <div class="field-row">
+        <div>
+            <label>First Name</label>
+            <input type="text" id="firstName" placeholder="Aravind" />
+        </div>
+        <div>
+            <label>Last Name</label>
+            <input type="text" id="lastName" placeholder="Kumar" />
+        </div>
+    </div>
+
+    <label>Email</label>
+    <input type="email" id="email" placeholder="aravind@example.com" />
+
+    <label>Amount (INR)</label>
+    <input type="number" id="amount" placeholder="500" min="1" />
+
+    <button id="payBtn" onclick="createOrder()">Generate Payment Link</button>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    async function createOrder() {
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const amount = document.getElementById('amount').value.trim();
+
+        if (!firstName || !email || !amount) {
+            showResult('error', 'Please fill in all required fields.');
+            return;
+        }
+
+        const btn = document.getElementById('payBtn');
+        btn.disabled = true;
+        btn.textContent = 'Creating...';
+
+        try {
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerName: `${firstName} ${lastName}`.trim(),
+                    customerEmail: email,
+                    amount: parseInt(amount) * 100  // convert to paise
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showResult('success', `
+                    <strong>Order created!</strong><br><br>
+                    Order ID: <code>${data.orderId}</code><br>
+                    Amount: ₹${parseInt(data.amount) / 100}<br>
+                    Status: ${data.status}<br><br>
+                    <a class="pay-link" href="${data.paymentLink}" target="_blank">Pay Now →</a>
+                `);
+            } else {
+                showResult('error', `Error: ${data.error}`);
+            }
+        } catch (err) {
+            showResult('error', `Failed to connect to server: ${err.message}`);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Generate Payment Link';
+        }
+    }
+
+    function showResult(type, html) {
+        const el = document.getElementById('result');
+        el.className = `result ${type}`;
+        el.innerHTML = html;
+        el.style.display = 'block';
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Status</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 48px 40px;
+            width: 420px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .icon { font-size: 64px; margin-bottom: 20px; }
+
+        h2 { font-size: 24px; margin-bottom: 10px; }
+
+        .detail {
+            font-size: 14px;
+            color: #666;
+            margin-top: 6px;
+        }
+
+        .detail span { font-weight: 600; color: #333; }
+
+        .divider {
+            border: none;
+            border-top: 1px solid #f0f0f0;
+            margin: 24px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-primary { background: #528ff5; }
+        .btn-primary:hover { background: #3a78e0; }
+
+        /* SUCCESS */
+        .status-success h2 { color: #1e7e45; }
+        .status-success .badge {
+            display: inline-block;
+            background: #edfaf3;
+            color: #1e7e45;
+            border: 1px solid #b2e6cc;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        /* FAILED */
+        .status-failed h2 { color: #c0392b; }
+        .status-failed .badge {
+            display: inline-block;
+            background: #fff0f0;
+            color: #c0392b;
+            border: 1px solid #f5c0c0;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        /* PENDING / UNKNOWN */
+        .status-other h2 { color: #b7860b; }
+        .status-other .badge {
+            display: inline-block;
+            background: #fffbea;
+            color: #b7860b;
+            border: 1px solid #f0d080;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- SUCCESS -->
+<div class="card status-success" th:if="${status == 'SUCCESS'}">
+    <div class="icon">✅</div>
+    <span class="badge">Payment Successful</span>
+    <h2>Thank you!</h2>
+    <hr class="divider">
+    <p class="detail">Order ID: <span th:text="${orderId}"></span></p>
+    <p class="detail">Amount Paid: <span>₹<span th:text="${amount}"></span></span></p>
+    <br>
+    <a href="/" class="btn btn-primary">Back to Home</a>
+</div>
+
+<!-- FAILED -->
+<div class="card status-failed" th:if="${status == 'FAILED'}">
+    <div class="icon">❌</div>
+    <span class="badge">Payment Failed</span>
+    <h2>Something went wrong</h2>
+    <hr class="divider">
+    <p class="detail">Order ID: <span th:text="${orderId}"></span></p>
+    <p class="detail">Amount: <span>₹<span th:text="${amount}"></span></span></p>
+    <br>
+    <a href="/" class="btn btn-primary">Try Again</a>
+</div>
+
+<!-- PENDING / UNKNOWN -->
+<div class="card status-other" th:if="${status != 'SUCCESS' and status != 'FAILED'}">
+    <div class="icon">⏳</div>
+    <span class="badge" th:text="${status}">PENDING</span>
+    <h2>Payment Pending</h2>
+    <hr class="divider">
+    <p class="detail" th:if="${message}" th:text="${message}"></p>
+    <p class="detail" th:if="${orderId}">Order ID: <span th:text="${orderId}"></span></p>
+    <br>
+    <a href="/" class="btn btn-primary">Back to Home</a>
+</div>
+
+</body>
+</html>
